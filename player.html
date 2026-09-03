@@ -67,7 +67,7 @@
 
   .related-card {
     width: 140px;
-    flex-shrink-0;
+    flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.2s;
     text-decoration: none;
@@ -121,7 +121,6 @@
         frameborder="0" 
         scrolling="no" 
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media;"
-        <!-- Strict Sandbox: Allows scripts and video playback, but completely blocks popups and top-level navigation -->
         sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
         referrerpolicy="no-referrer"
       ></iframe>
@@ -166,7 +165,7 @@
 
 <script>
   // ===================================================================
-  // NEW AD-BLOCKER LOGIC
+  // AD-BLOCKER LOGIC (Parent Window Protection)
   // ===================================================================
   
   // 1. Neutralize window.open globally so ad scripts cannot spawn tabs
