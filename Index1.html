@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Now Playing - Summer Screen</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #08080A; color: #f4f4f5; font-family: 'Outfit', sans-serif; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #08080A; }
+  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+  
+  .player-header { 
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: rgba(8,8,10,0.8); backdrop-filter: blur(10px); 
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100; 
+    border-bottom: 1px solid rgba(255,255,255,0.08); 
+  }
+  
+  .player-layout {
+    margin-top: 64px;
+    padding: 24px;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  
+  .video-wrapper iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Ad-blocker Shield */
+  .ad-shield {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  
+  .ad-shield.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .shield-btn {
+    background: #fff;
+    color: #000;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(255,255,255,0.2);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  }
+  
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 24px;
+  }
+  
+  @media (min-width: 1024px) {
+    .content-grid.has-sidebar {
+      grid-template-columns: 1fr 380px; /* Sidebar on right for TV/Anime */
+    }
+  }
+  
+  @media (max-width: 1023px) {
+    #sidebarArea { order: -1; margin-bottom: 8px; } /* Episodes move above details on mobile */
+    #sidebarArea .card { height: auto; max-height: 50vh; }
+  }
+  
+  .card {
+    background: #141417;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  
+  .season-select {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a1a1aa' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
+  
+  .episode-item {
+    display: flex;
+    gap: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+  }
+  
+  .episode-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+  
+  .episode-item.active {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+  }
+  
+  .episode-thumb {
+    width: 120px;
+    height: 70px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background-color: #27272a;
+  }
+  
+  .related-card {
+    width: 160px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.2s;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .related-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .related-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  
+  .scroll-x {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+  }
+  .scroll-x::-webkit-scrollbar { display: none; }
+  
+  .spinner-container {
+    display: flex; justify-content: center; align-items: center; height: 50vh;
+  }
+  .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+  <div class="player-header">
+    <a href="index.html" class="flex items-center gap-3 text-zinc-300 hover:text-white transition">
+      <i class="fas fa-arrow-left"></i>
+      <span class="font-semibold hidden md:block">Back</span>
+    </a>
+    <div class="font-bold text-lg md:text-xl tracking-tight truncate mx-4" id="pageTitle">Loading Player...</div>
+    <i class="fas fa-film text-zinc-500"></i>
+  </div>
+
+  <div class="player-layout">
+    <div class="video-wrapper">
+      <iframe id="videoPlayer" src="" allowfullscreen frameborder="0" scrolling="no" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write;"></iframe>
+      
+      <!-- Ad-blocker Shield -->
+      <div class="ad-shield" id="adShield">
+        <div class="shield-btn">
+          <i class="fas fa-play"></i> Click to Play (Ad-Free)
+        </div>
+      </div>
+    </div>
+    
+    <div class="content-grid mt-6" id="contentGrid">
+      <div class="main-content-area">
+        <!-- Details Card -->
+        <div class="card mb-6">
+          <div id="detailsContent" class="spinner-container"><div class="spinner"></div></div>
+        </div>
+        
+        <!-- Cast -->
+        <div class="card mb-6" id="castCard" style="display: none;">
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-white rounded"></span>Top Cast</h3>
+          <div class="scroll-x" id="castList"></div>
+        </div>
+        
+        <!-- Related -->
+        <div class="card" id="relatedCard" style="display: none;">
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-white rounded"></span>More Like This</h3>
+          <div class="scroll-x" id="relatedList"></div>
+        </div>
+      </div>
+      
+      <!-- Sidebar for Episodes (TV/Anime) -->
+      <div class="sidebar-area" id="sidebarArea" style="display: none;">
+        <div class="card" style="height: 100%; display: flex; flex-direction: column; max-height: 80vh;">
+          <div class="mb-4">
+            <select id="seasonSelect" class="season-select"></select>
+          </div>
+          <div id="episodeList" style="overflow-y: auto; flex: 1; margin-right: -8px; padding-right: 8px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API_KEY = '4f599baa15d072c9de346b2816a131b8';
+  const BASE_URL = 'https://api.themoviedb.org/3';
+  const IMG_URL = 'https://image.tmdb.org/t/p/w500';
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get('id');
+  const type = urlParams.get('type') || 'movie'; // 'movie' or 'tv'
+  
+  let currentSeason = 1;
+  let currentEpisode = 1;
+  let isShieldActive = false;
+  
+  async function init() {
+    if (!id) return;
+    
+    const iframe = document.getElementById('videoPlayer');
+    
+    // Set initial URL
+    updateIframeSrc();
+    
+    // Wait for iframe to load completely, then activate ad blocker
+    iframe.onload = () => {
+      setTimeout(() => {
+        activateAdBlocker();
+      }, 1000); // 1s delay after load to ensure scripts are settled
+    };
+    
+    await loadDetails();
+  }
+  
+  function updateIframeSrc() {
+    const iframe = document.getElementById('videoPlayer');
+    if (type === 'tv') {
+      iframe.src = `https://web.nxsha.app/embed/tv/${id}/${currentSeason}/${currentEpisode}?color=%23ffffff`;
+    } else {
+      iframe.src = `https://web.nxsha.app/embed/movie/${id}?color=%23ffffff`;
+    }
+  }
+  
+  function activateAdBlocker() {
+    const adShield = document.getElementById('adShield');
+    
+    // Show the shield
+    adShield.classList.add('active');
+    isShieldActive = true;
+    
+    // The shield absorbs the first click. Pop-up ads usually trigger on the first click.
+    // This shield swallows that click, preventing the pop-up, and then disappears.
+    adShield.addEventListener('click', function handleClick() {
+      adShield.classList.remove('active');
+      isShieldActive = false;
+      // Remove event listener after first click so the user can interact normally
+      adShield.removeEventListener('click', handleClick);
+      
+      // Refocus on the window immediately in case a pop-under tried to escape
+      window.focus();
+    }, { once: true });
+    
+    // Global blur listener to catch and refocus any hidden pop-unders
+    window.addEventListener('blur', () => {
+      if (isShieldActive) {
+        setTimeout(() => {
+          window.focus();
+        }, 100);
+      }
+    });
+  }
+  
+  async function loadDetails() {
+    try {
+      const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=credits,similar`);
+      const data = await res.json();
+      
+      const title = type === 'tv' ? data.name : data.title;
+      document.getElementById('pageTitle').textContent = title;
+      document.title = `Playing: ${title} - Summer Screen`;
+      
+      const year = type === 'tv' ? data.first_air_date?.split('-')[0] : data.release_date?.split('-')[0];
+      const runtime = type === 'tv' ? `${data.episode_run_time[0] || 0}m` : (data.runtime ? `${Math.floor(data.runtime/60)}h ${data.runtime%60}m` : 'N/A');
+      
+      let detailsHTML = `
+        <h1 class="text-3xl md:text-4xl font-black mb-3 tracking-tight">${title}</h1>
+        <div class="flex flex-wrap gap-3 text-sm text-zinc-400 mb-4 font-medium items-center">
+          <span class="text-green-400 font-bold flex items-center gap-1"><i class="fas fa-star text-yellow-400"></i> ${data.vote_average?.toFixed(1)}</span>
+          <span>${year}</span>
+          <span class="px-2 py-0.5 bg-white/10 rounded">${runtime}</span>
+          ${data.genres?.map(g => `<span class="px-2 py-0.5 bg-white/10 rounded">${g.name}</span>`).join('')}
+        </div>
+        <p class="text-zinc-300 leading-relaxed">${data.overview}</p>
+      `;
+      document.getElementById('detailsContent').innerHTML = detailsHTML;
+      
+      // Cast
+      if (data.credits?.cast?.length > 0) {
+        document.getElementById('castCard').style.display = 'block';
+        const castHTML = data.credits.cast.slice(0, 10).map(c => `
+          <div class="flex flex-col items-center w-24 flex-shrink-0">
+            <div class="w-20 h-20 rounded-full bg-cover bg-center mb-2" style="background-image: url('${c.profile_path ? IMG_URL + c.profile_path : 'https://via.placeholder.com/150'}')"></div>
+            <div class="text-xs font-semibold text-center truncate w-full">${c.name}</div>
+            <div class="text-xs text-zinc-500 text-center truncate w-full">${c.character}</div>
+          </div>
+        `).join('');
+        document.getElementById('castList').innerHTML = castHTML;
+      }
+      
+      // Related
+      if (data.similar?.results?.length > 0) {
+        document.getElementById('relatedCard').style.display = 'block';
+        const relatedHTML = data.similar.results.slice(0, 10).map(m => `
+          <a href="player.html?id=${m.id}&type=${type}" class="related-card">
+            <div class="related-poster" style="background-image: url('${m.poster_path ? IMG_URL + m.poster_path : ''}')"></div>
+            <div class="text-sm font-semibold truncate">${type === 'tv' ? m.name : m.title}</div>
+            <div class="text-xs text-zinc-500">${type === 'tv' ? m.first_air_date?.split('-')[0] : m.release_date?.split('-')[0]}</div>
+          </a>
+        `).join('');
+        document.getElementById('relatedList').innerHTML = relatedHTML;
+      }
+      
+      // TV/Anime Seasons & Episodes
+      if (type === 'tv' && data.seasons?.length > 0) {
+        document.getElementById('sidebarArea').style.display = 'block';
+        document.getElementById('contentGrid').classList.add('has-sidebar');
+        
+        const validSeasons = data.seasons.filter(s => s.season_number > 0);
+        const select = document.getElementById('seasonSelect');
+        select.innerHTML = validSeasons.map(s => `<option value="${s.season_number}">${s.name}</option>`).join('');
+        
+        select.onchange = (e) => {
+          currentSeason = e.target.value;
+          currentEpisode = 1; // Reset episode
+          loadEpisodes(currentSeason);
+          updateIframeSrc(); // Update player immediately
+        };
+        
+        loadEpisodes(currentSeason);
+      }
+      
+    } catch (error) {
+      console.error('Error loading details:', error);
+      document.getElementById('detailsContent').innerHTML = '<p class="text-red-400 text-center">Failed to load details.</p>';
+    }
+  }
+  
+  async function loadEpisodes(seasonNum) {
+    const epList = document.getElementById('episodeList');
+    epList.innerHTML = `<div class="flex justify-center py-10"><div class="spinner" style="width:30px;height:30px;"></div></div>`;
+    
+    try {
+      const res = await fetch(`${BASE_URL}/tv/${id}/season/${seasonNum}?api_key=${API_KEY}`);
+      const data = await res.json();
+      
+      if (data.episodes?.length > 0) {
+        epList.innerHTML = data.episodes.map(ep => `
+          <div class="episode-item ${ep.episode_number === currentEpisode ? 'active' : ''}" onclick="playEpisode(${seasonNum}, ${ep.episode_number})">
+            <div class="episode-thumb" style="background-image: url('${ep.still_path ? 'https://image.tmdb.org/t/p/w300' + ep.still_path : ''}')"></div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm">E${ep.episode_number}. ${ep.name}</div>
+              <div class="text-xs text-zinc-500 line-clamp-2 mt-1">${ep.overview || 'No description'}</div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        epList.innerHTML = '<p class="text-zinc-500 text-sm text-center py-10">No episodes found</p>';
+      }
+    } catch (e) {
+      console.error(e);
+      epList.innerHTML = '<p class="text-red-400 text-sm text-center py-10">Failed to load episodes</p>';
+    }
+  }
+  
+  function playEpisode(season, episode) {
+    currentSeason = season;
+    currentEpisode = episode;
+    updateIframeSrc();
+    
+    // Update active state
+    document.querySelectorAll('.episode-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  init();
+</script>
+</body>
+</html>
