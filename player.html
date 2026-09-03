@@ -88,13 +88,6 @@
   .spinner-container { display: flex; justify-content: center; align-items: center; height: 50vh; }
   .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Hide generic overlay divs that some ad scripts inject into the parent */
-  body > div:not(.player-layout):not(.player-header) {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
 </style>
 </head>
 <body class="overflow-x-hidden">
@@ -120,8 +113,7 @@
         allowfullscreen 
         frameborder="0" 
         scrolling="no" 
-        allow="autoplay; fullscreen; picture-in-picture; encrypted-media;"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+        allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write;"
         referrerpolicy="no-referrer"
       ></iframe>
     </div>
@@ -164,38 +156,6 @@
   </div>
 
 <script>
-  // ===================================================================
-  // AD-BLOCKER LOGIC (Parent Window Protection)
-  // ===================================================================
-  
-  // 1. Neutralize window.open globally so ad scripts cannot spawn tabs
-  window.open = function() { return null; };
-  
-  // 2. Intercept and destroy any clicks on elements attempting to open new tabs
-  document.addEventListener('click', (e) => {
-    const target = e.target.closest('a');
-    if (target && (target.target === '_blank' || target.target === '_top' || target.target === '_parent')) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }, true);
-
-  // 3. MutationObserver to destroy any hidden ad overlays injected into the DOM
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1 && node.tagName === 'DIV' && !node.closest('.player-layout') && !node.closest('.player-header')) {
-          // If it's an injected div not part of our layout, hide it
-          node.style.display = 'none';
-          node.style.opacity = '0';
-          node.style.pointerEvents = 'none';
-        }
-      });
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-
-
   // ===================================================================
   // PLAYER & TMDB LOGIC
   // ===================================================================
@@ -312,7 +272,7 @@
       
       if (data.episodes?.length > 0) {
         epList.innerHTML = data.episodes.map(ep => `
-          <div class="episode-item ${ep.episode_number === currentEpisode ? 'active' : ''}" onclick="playEpisode(${seasonNum}, ${ep.episode_number})">
+          <div class="episode-item ${ep.episode_number === currentEpisode ? 'active' : ''}" onclick="playEpisode(${seasonNum}, ${ep.episode_number}, event)">
             <div class="episode-thumb bg-zinc-800" style="background-image: url('${ep.still_path ? 'https://image.tmdb.org/t/p/w300' + ep.still_path : ''}')"></div>
             <div class="flex-1 min-w-0">
               <div class="font-semibold text-sm truncate">E${ep.episode_number}. ${ep.name}</div>
@@ -329,13 +289,15 @@
     }
   }
   
-  function playEpisode(season, episode) {
+  function playEpisode(season, episode, e) {
     currentSeason = season;
     currentEpisode = episode;
     updateIframeSrc();
     
-    document.querySelectorAll('.episode-item').forEach(el => el.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    if (e) {
+      document.querySelectorAll('.episode-item').forEach(el => el.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+    }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
