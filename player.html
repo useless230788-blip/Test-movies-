@@ -67,7 +67,7 @@
 
   .related-card {
     width: 140px;
-    flex-shrink: 0;
+    flex-shrink-0;
     cursor: pointer;
     transition: transform 0.2s;
     text-decoration: none;
@@ -112,7 +112,7 @@
   <!-- Main Layout -->
   <div class="pt-14 sm:pt-16">
     <!-- Video Player Area -->
-    <div class="w-full bg-black aspect-video md:aspect-auto md:h-[70vh] lg:h-[75vh] max-h-[800px] relative overflow-hidden">
+    <div class="w-full bg-black aspect-video md:aspect-auto md:h-[70vh] lg:h-[78vh] max-h-[800px] relative overflow-hidden">
       <iframe 
         id="videoPlayer" 
         class="absolute top-0 left-0 w-full h-full" 
@@ -121,8 +121,9 @@
         frameborder="0" 
         scrolling="no" 
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media;"
-        <!-- Sandbox restricts the iframe from opening new tabs, blocking pop-up ads completely -->
+        <!-- Strict Sandbox: Allows scripts and video playback, but completely blocks popups and top-level navigation -->
         sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+        referrerpolicy="no-referrer"
       ></iframe>
     </div>
 
@@ -164,6 +165,41 @@
   </div>
 
 <script>
+  // ===================================================================
+  // NEW AD-BLOCKER LOGIC
+  // ===================================================================
+  
+  // 1. Neutralize window.open globally so ad scripts cannot spawn tabs
+  window.open = function() { return null; };
+  
+  // 2. Intercept and destroy any clicks on elements attempting to open new tabs
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('a');
+    if (target && (target.target === '_blank' || target.target === '_top' || target.target === '_parent')) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+  // 3. MutationObserver to destroy any hidden ad overlays injected into the DOM
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 && node.tagName === 'DIV' && !node.closest('.player-layout') && !node.closest('.player-header')) {
+          // If it's an injected div not part of our layout, hide it
+          node.style.display = 'none';
+          node.style.opacity = '0';
+          node.style.pointerEvents = 'none';
+        }
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+
+  // ===================================================================
+  // PLAYER & TMDB LOGIC
+  // ===================================================================
   const API_KEY = '4f599baa15d072c9de346b2816a131b8';
   const BASE_URL = 'https://api.themoviedb.org/3';
   const IMG_URL = 'https://image.tmdb.org/t/p/w500';
