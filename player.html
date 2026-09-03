@@ -9,112 +9,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   body { margin: 0; background: #08080A; color: #f4f4f5; font-family: 'Outfit', sans-serif; }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: #08080A; }
-  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
-  
-  .player-header { 
-    height: 64px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px; background: rgba(8,8,10,0.8); backdrop-filter: blur(10px); 
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100; 
-    border-bottom: 1px solid rgba(255,255,255,0.08); 
-  }
-  
-  .player-layout {
-    margin-top: 64px;
-    padding: 24px;
-    max-width: 1600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .video-wrapper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16/9;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
+
+  .scroll-hidden::-webkit-scrollbar { display: none; }
+  .scroll-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .card {
+    background: rgba(20, 20, 23, 0.6);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.08);
-  }
-  
-  .video-wrapper iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    position: relative;
-    z-index: 1;
-  }
-  
-  /* Ad-blocker Shield */
-  .ad-shield {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 20;
-    background: rgba(0,0,0,0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  
-  .ad-shield.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  
-  .shield-btn {
-    background: #fff;
-    color: #000;
-    padding: 14px 32px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 8px 30px rgba(255,255,255,0.2);
-    animation: pulse 2s infinite;
+    border-radius: 12px;
   }
 
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(255,255,255,0); }
-    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-  }
-  
-  .content-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    margin-top: 24px;
-  }
-  
-  @media (min-width: 1024px) {
-    .content-grid.has-sidebar {
-      grid-template-columns: 1fr 380px; /* Sidebar on right for TV/Anime */
-    }
-  }
-  
-  @media (max-width: 1023px) {
-    #sidebarArea { order: -1; margin-bottom: 8px; } /* Episodes move above details on mobile */
-    #sidebarArea .card { height: auto; max-height: 50vh; }
-  }
-  
-  .card {
-    background: #141417;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 24px;
-  }
-  
   .season-select {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
@@ -131,50 +40,41 @@
     background-repeat: no-repeat;
     background-position: right 16px center;
   }
-  
+
   .episode-item {
     display: flex;
-    gap: 16px;
-    padding: 12px;
+    gap: 12px;
+    padding: 10px;
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
     margin-bottom: 8px;
     border: 1px solid transparent;
   }
-  
-  .episode-item:hover {
-    background: rgba(255,255,255,0.05);
-  }
-  
-  .episode-item.active {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.2);
-  }
-  
+
+  .episode-item:hover { background: rgba(255,255,255,0.05); }
+  .episode-item.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
   .episode-thumb {
-    width: 120px;
-    height: 70px;
+    width: 100px;
+    height: 56px;
     background-size: cover;
     background-position: center;
     border-radius: 6px;
     flex-shrink: 0;
     background-color: #27272a;
   }
-  
+
   .related-card {
-    width: 160px;
+    width: 140px;
     flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.2s;
     text-decoration: none;
     color: inherit;
   }
-  
-  .related-card:hover {
-    transform: translateY(-4px);
-  }
-  
+  .related-card:hover { transform: translateY(-4px); }
+
   .related-poster {
     width: 100%;
     aspect-ratio: 2/3;
@@ -184,75 +84,82 @@
     margin-bottom: 8px;
     border: 1px solid rgba(255,255,255,0.08);
   }
-  
-  .scroll-x {
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 8px;
-  }
-  .scroll-x::-webkit-scrollbar { display: none; }
-  
-  .spinner-container {
-    display: flex; justify-content: center; align-items: center; height: 50vh;
-  }
+
+  .spinner-container { display: flex; justify-content: center; align-items: center; height: 50vh; }
   .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Hide generic overlay divs that some ad scripts inject into the parent */
+  body > div:not(.player-layout):not(.player-header) {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 </style>
 </head>
-<body>
+<body class="overflow-x-hidden">
 
-  <div class="player-header">
+  <!-- Header -->
+  <header class="fixed top-0 left-0 right-0 h-14 sm:h-16 z-50 bg-black/80 backdrop-blur border-b border-white/10 flex items-center justify-between px-4 sm:px-6">
     <a href="index.html" class="flex items-center gap-3 text-zinc-300 hover:text-white transition">
-      <i class="fas fa-arrow-left"></i>
-      <span class="font-semibold hidden md:block">Back</span>
+      <i class="fas fa-arrow-left text-lg"></i>
+      <span class="font-semibold hidden sm:block">Back</span>
     </a>
-    <div class="font-bold text-lg md:text-xl tracking-tight truncate mx-4" id="pageTitle">Loading Player...</div>
-    <i class="fas fa-film text-zinc-500"></i>
-  </div>
+    <div class="font-bold text-base sm:text-xl tracking-tight truncate mx-4" id="pageTitle">Loading...</div>
+    <i class="fas fa-film text-zinc-500 text-lg"></i>
+  </header>
 
-  <div class="player-layout">
-    <div class="video-wrapper">
-      <iframe id="videoPlayer" src="" allowfullscreen frameborder="0" scrolling="no" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write;"></iframe>
-      
-      <!-- Ad-blocker Shield -->
-      <div class="ad-shield" id="adShield">
-        <div class="shield-btn">
-          <i class="fas fa-play"></i> Click to Play (Ad-Free)
-        </div>
-      </div>
+  <!-- Main Layout -->
+  <div class="pt-14 sm:pt-16">
+    <!-- Video Player Area -->
+    <div class="w-full bg-black aspect-video md:aspect-auto md:h-[70vh] lg:h-[75vh] max-h-[800px] relative overflow-hidden">
+      <iframe 
+        id="videoPlayer" 
+        class="absolute top-0 left-0 w-full h-full" 
+        src="" 
+        allowfullscreen 
+        frameborder="0" 
+        scrolling="no" 
+        allow="autoplay; fullscreen; picture-in-picture; encrypted-media;"
+        <!-- Sandbox restricts the iframe from opening new tabs, blocking pop-up ads completely -->
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+      ></iframe>
     </div>
-    
-    <div class="content-grid mt-6" id="contentGrid">
-      <div class="main-content-area">
+
+    <!-- Content Grid -->
+    <div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-4 md:p-6">
+      
+      <!-- Left Column: Details, Cast, Related -->
+      <div class="lg:col-span-2 space-y-6">
         <!-- Details Card -->
-        <div class="card mb-6">
+        <div class="card p-5 md:p-8">
           <div id="detailsContent" class="spinner-container"><div class="spinner"></div></div>
         </div>
         
-        <!-- Cast -->
-        <div class="card mb-6" id="castCard" style="display: none;">
-          <h3 class="text-xl font-bold mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-white rounded"></span>Top Cast</h3>
-          <div class="scroll-x" id="castList"></div>
+        <!-- Cast Card -->
+        <div class="card p-5 md:p-8" id="castCard" style="display: none;">
+          <h3 class="text-lg md:text-xl font-bold mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-white rounded"></span>Top Cast</h3>
+          <div class="flex gap-4 overflow-x-auto scroll-hidden pb-2" id="castList"></div>
         </div>
         
-        <!-- Related -->
-        <div class="card" id="relatedCard" style="display: none;">
-          <h3 class="text-xl font-bold mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-white rounded"></span>More Like This</h3>
-          <div class="scroll-x" id="relatedList"></div>
+        <!-- Related Card -->
+        <div class="card p-5 md:p-8" id="relatedCard" style="display: none;">
+          <h3 class="text-lg md:text-xl font-bold mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-white rounded"></span>More Like This</h3>
+          <div class="flex gap-4 overflow-x-auto scroll-hidden pb-2" id="relatedList"></div>
         </div>
       </div>
       
-      <!-- Sidebar for Episodes (TV/Anime) -->
-      <div class="sidebar-area" id="sidebarArea" style="display: none;">
-        <div class="card" style="height: 100%; display: flex; flex-direction: column; max-height: 80vh;">
+      <!-- Right Column: Episodes (TV/Anime) -->
+      <div class="lg:col-span-1 order-first lg:order-last" id="sidebarArea" style="display: none;">
+        <div class="card p-4 md:p-6 lg:sticky lg:top-20">
+          <h3 class="text-lg md:text-xl font-bold mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-white rounded"></span>Episodes</h3>
           <div class="mb-4">
             <select id="seasonSelect" class="season-select"></select>
           </div>
-          <div id="episodeList" style="overflow-y: auto; flex: 1; margin-right: -8px; padding-right: 8px;"></div>
+          <div id="episodeList" class="overflow-y-auto scroll-hidden pr-1" style="max-height: 60vh;"></div>
         </div>
       </div>
+      
     </div>
   </div>
 
@@ -263,26 +170,16 @@
   
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
-  const type = urlParams.get('type') || 'movie'; // 'movie' or 'tv'
+  const type = urlParams.get('type') || 'movie';
   
   let currentSeason = 1;
   let currentEpisode = 1;
-  let isShieldActive = false;
   
   async function init() {
     if (!id) return;
     
     const iframe = document.getElementById('videoPlayer');
-    
-    // Set initial URL
     updateIframeSrc();
-    
-    // Wait for iframe to load completely, then activate ad blocker
-    iframe.onload = () => {
-      setTimeout(() => {
-        activateAdBlocker();
-      }, 1000); // 1s delay after load to ensure scripts are settled
-    };
     
     await loadDetails();
   }
@@ -294,35 +191,6 @@
     } else {
       iframe.src = `https://web.nxsha.app/embed/movie/${id}?color=%23ffffff`;
     }
-  }
-  
-  function activateAdBlocker() {
-    const adShield = document.getElementById('adShield');
-    
-    // Show the shield
-    adShield.classList.add('active');
-    isShieldActive = true;
-    
-    // The shield absorbs the first click. Pop-up ads usually trigger on the first click.
-    // This shield swallows that click, preventing the pop-up, and then disappears.
-    adShield.addEventListener('click', function handleClick() {
-      adShield.classList.remove('active');
-      isShieldActive = false;
-      // Remove event listener after first click so the user can interact normally
-      adShield.removeEventListener('click', handleClick);
-      
-      // Refocus on the window immediately in case a pop-under tried to escape
-      window.focus();
-    }, { once: true });
-    
-    // Global blur listener to catch and refocus any hidden pop-unders
-    window.addEventListener('blur', () => {
-      if (isShieldActive) {
-        setTimeout(() => {
-          window.focus();
-        }, 100);
-      }
-    });
   }
   
   async function loadDetails() {
@@ -338,14 +206,14 @@
       const runtime = type === 'tv' ? `${data.episode_run_time[0] || 0}m` : (data.runtime ? `${Math.floor(data.runtime/60)}h ${data.runtime%60}m` : 'N/A');
       
       let detailsHTML = `
-        <h1 class="text-3xl md:text-4xl font-black mb-3 tracking-tight">${title}</h1>
-        <div class="flex flex-wrap gap-3 text-sm text-zinc-400 mb-4 font-medium items-center">
+        <h1 class="text-2xl md:text-4xl font-black mb-3 tracking-tight">${title}</h1>
+        <div class="flex flex-wrap gap-2 md:gap-3 text-xs md:text-sm text-zinc-400 mb-4 font-medium items-center">
           <span class="text-green-400 font-bold flex items-center gap-1"><i class="fas fa-star text-yellow-400"></i> ${data.vote_average?.toFixed(1)}</span>
           <span>${year}</span>
           <span class="px-2 py-0.5 bg-white/10 rounded">${runtime}</span>
-          ${data.genres?.map(g => `<span class="px-2 py-0.5 bg-white/10 rounded">${g.name}</span>`).join('')}
+          ${data.genres?.slice(0,3).map(g => `<span class="px-2 py-0.5 bg-white/10 rounded">${g.name}</span>`).join('')}
         </div>
-        <p class="text-zinc-300 leading-relaxed">${data.overview}</p>
+        <p class="text-zinc-300 leading-relaxed text-sm md:text-base">${data.overview}</p>
       `;
       document.getElementById('detailsContent').innerHTML = detailsHTML;
       
@@ -353,10 +221,10 @@
       if (data.credits?.cast?.length > 0) {
         document.getElementById('castCard').style.display = 'block';
         const castHTML = data.credits.cast.slice(0, 10).map(c => `
-          <div class="flex flex-col items-center w-24 flex-shrink-0">
-            <div class="w-20 h-20 rounded-full bg-cover bg-center mb-2" style="background-image: url('${c.profile_path ? IMG_URL + c.profile_path : 'https://via.placeholder.com/150'}')"></div>
+          <div class="flex flex-col items-center w-20 flex-shrink-0">
+            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-cover bg-center mb-2 bg-zinc-800" style="background-image: url('${c.profile_path ? IMG_URL + c.profile_path : ''}')"></div>
             <div class="text-xs font-semibold text-center truncate w-full">${c.name}</div>
-            <div class="text-xs text-zinc-500 text-center truncate w-full">${c.character}</div>
+            <div class="text-[10px] text-zinc-500 text-center truncate w-full">${c.character}</div>
           </div>
         `).join('');
         document.getElementById('castList').innerHTML = castHTML;
@@ -367,7 +235,7 @@
         document.getElementById('relatedCard').style.display = 'block';
         const relatedHTML = data.similar.results.slice(0, 10).map(m => `
           <a href="player.html?id=${m.id}&type=${type}" class="related-card">
-            <div class="related-poster" style="background-image: url('${m.poster_path ? IMG_URL + m.poster_path : ''}')"></div>
+            <div class="related-poster bg-zinc-800" style="background-image: url('${m.poster_path ? IMG_URL + m.poster_path : ''}')"></div>
             <div class="text-sm font-semibold truncate">${type === 'tv' ? m.name : m.title}</div>
             <div class="text-xs text-zinc-500">${type === 'tv' ? m.first_air_date?.split('-')[0] : m.release_date?.split('-')[0]}</div>
           </a>
@@ -378,7 +246,6 @@
       // TV/Anime Seasons & Episodes
       if (type === 'tv' && data.seasons?.length > 0) {
         document.getElementById('sidebarArea').style.display = 'block';
-        document.getElementById('contentGrid').classList.add('has-sidebar');
         
         const validSeasons = data.seasons.filter(s => s.season_number > 0);
         const select = document.getElementById('seasonSelect');
@@ -386,9 +253,9 @@
         
         select.onchange = (e) => {
           currentSeason = e.target.value;
-          currentEpisode = 1; // Reset episode
+          currentEpisode = 1;
           loadEpisodes(currentSeason);
-          updateIframeSrc(); // Update player immediately
+          updateIframeSrc();
         };
         
         loadEpisodes(currentSeason);
@@ -411,9 +278,9 @@
       if (data.episodes?.length > 0) {
         epList.innerHTML = data.episodes.map(ep => `
           <div class="episode-item ${ep.episode_number === currentEpisode ? 'active' : ''}" onclick="playEpisode(${seasonNum}, ${ep.episode_number})">
-            <div class="episode-thumb" style="background-image: url('${ep.still_path ? 'https://image.tmdb.org/t/p/w300' + ep.still_path : ''}')"></div>
+            <div class="episode-thumb bg-zinc-800" style="background-image: url('${ep.still_path ? 'https://image.tmdb.org/t/p/w300' + ep.still_path : ''}')"></div>
             <div class="flex-1 min-w-0">
-              <div class="font-semibold text-sm">E${ep.episode_number}. ${ep.name}</div>
+              <div class="font-semibold text-sm truncate">E${ep.episode_number}. ${ep.name}</div>
               <div class="text-xs text-zinc-500 line-clamp-2 mt-1">${ep.overview || 'No description'}</div>
             </div>
           </div>
@@ -432,11 +299,9 @@
     currentEpisode = episode;
     updateIframeSrc();
     
-    // Update active state
     document.querySelectorAll('.episode-item').forEach(el => el.classList.remove('active'));
     event.currentTarget.classList.add('active');
     
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
